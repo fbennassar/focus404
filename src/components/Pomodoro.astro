@@ -1,0 +1,177 @@
+---
+
+---
+
+
+
+<div id="pomodoro-timer" class="text-center p-10 bg-white/20 rounded-lg backdrop-blur-md ">
+    <h2 id="actual-status" class="text-2xl font-bold mb-4"></h2>
+  <div id="time-display" class="text-8xl font-bold mb-4">25:00</div>
+  <div class="space-x-4">
+    <button id="start-pause-btn" class="px-6 py-2 bg-green-500 text-white rounded hover:bg-green-600">Iniciar</button>
+    <button id="reset-btn" class="px-6 py-2 bg-red-500 text-white rounded hover:bg-red-600">Reiniciar</button>
+    <button id="finish-btn" class="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Finalizar</button>
+    <button id="skip-btn" class="px-6 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600">Saltar</button>
+  </div>
+  <div id="stages" class="mt-4">
+    <span class="inline-block w-4 h-4 bg-gray-300 rounded-full mr-2"></span>
+    <span class="inline-block w-4 h-4 bg-gray-300 rounded-full mr-2"></span>
+    <span class="inline-block w-4 h-4 bg-gray-300 rounded-full mr-2"></span>
+    <span class="inline-block w-4 h-4 bg-gray-300 rounded-full mr-2"></span>
+</div>
+
+<script>
+
+    const timeDisplay = document.getElementById("time-display") as HTMLDivElement;
+    const startPauseBtn = document.getElementById("start-pause-btn") as HTMLButtonElement;
+    const resetBtn = document.getElementById("reset-btn") as HTMLButtonElement;
+    const finishBtn = document.getElementById("finish-btn") as HTMLButtonElement;
+    const skipBtn = document.getElementById("skip-btn") as HTMLButtonElement;
+    const statusDisplay = document.getElementById("actual-status") as HTMLHeadingElement;
+
+    const workTime = 3;
+    const breakTime = 5;
+    const superBreakTime = 10;
+    const numStages = 4;
+
+    let isRunning =  false
+    let currentPhase = "work"; // "work", "break", "superBreak"
+    let timeLeft = workTime;
+    let timerInterval: ReturnType<typeof setTimeout>;
+
+    let stageStatus: boolean[] = [false, false, false, false];
+
+    const updateDisplay = () => {
+        let statusText = "";
+        let minutes = 0;
+        let seconds = 0;
+
+        if (currentPhase === "work") {
+            statusText = "Fase de trabajo";
+            minutes = Math.floor(timeLeft / 60);
+            seconds = timeLeft % 60;
+        } else if (currentPhase === "break") {
+            statusText = "Fase de descanso";
+            minutes = Math.floor(timeLeft / 60);
+            seconds = timeLeft % 60;
+        } else if (currentPhase === "superBreak") {
+            statusText = "Fases completadas, descansa!";
+            minutes = Math.floor(timeLeft / 60);
+            seconds = timeLeft % 60;
+        }
+
+        statusDisplay.textContent = statusText;
+        timeDisplay.textContent = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+    }
+
+    const updateStages = () => {
+        const stages = document.getElementById("stages") as HTMLDivElement;
+        const stageIndicators = stages.querySelectorAll("span");
+
+        stageIndicators.forEach((indicator, index) => {
+            if (stageStatus[index]) {
+                indicator.classList.remove("bg-gray-300");
+                indicator.classList.add("bg-green-500");
+            } else {
+                indicator.classList.remove("bg-green-500");
+                indicator.classList.add("bg-gray-300");
+            }
+        });
+    }
+
+    const nextPhase = () => {
+        if (currentPhase === "work") {
+            currentPhase = "break";
+            timeLeft = breakTime;
+            for (let i = 0; i < stageStatus.length; i++) {
+                if (!stageStatus[i]) {
+                    stageStatus[i] = true;
+                    break;
+                }
+            }
+            if (stageStatus.filter(status => status).length === numStages) {
+                currentPhase = "superBreak";
+                timeLeft = superBreakTime;
+                stageStatus = [false, false, false, false];
+            }
+            updateStages();
+        } else if (currentPhase === "break") {
+            currentPhase = "work";
+            timeLeft = workTime;
+        } else if (currentPhase === "superBreak") {
+            currentPhase = "work";
+            timeLeft = workTime;
+        }
+    }
+
+    const startTimer = () => {
+            isRunning = true;
+            timerInterval = setInterval(() => {
+                timeLeft--;
+
+                if (timeLeft <= 0) {
+                    pauseTimer();
+                    startPauseBtn.textContent = "Iniciar";
+                    nextPhase();
+                }
+
+                updateDisplay();
+            }, 1000);
+    }
+
+    const pauseTimer = () => {
+        isRunning = false;
+        clearInterval(timerInterval);
+    }
+
+    const resetTimer = () => {
+        isRunning = false;
+        startPauseBtn.textContent = "Iniciar";
+        clearInterval(timerInterval);
+        if (currentPhase === "work") {
+            timeLeft = workTime;
+            
+        } else if (currentPhase === "break") {
+            timeLeft = breakTime;
+
+        } else if (currentPhase === "superBreak") {
+            timeLeft = superBreakTime;
+        }
+
+        updateDisplay();
+    }
+
+    const finishSession = () => {
+        stageStatus = [false, false, false, false];
+        currentPhase = "work";
+        timeLeft = workTime;
+        startPauseBtn.textContent = "Iniciar";
+        pauseTimer();
+        updateDisplay();
+        updateStages();
+    }
+
+    const skipStage = () => {
+        nextPhase();
+        updateDisplay();
+        pauseTimer();
+        startPauseBtn.textContent = "Iniciar";
+    }
+
+    startPauseBtn.addEventListener("click", () => {
+        if (isRunning) {
+            pauseTimer();
+            startPauseBtn.textContent = "Iniciar";
+        } else {
+            startTimer();
+            startPauseBtn.textContent = "Pausar";
+        }
+    });
+
+    resetBtn.addEventListener("click", resetTimer);
+
+    finishBtn.addEventListener("click", finishSession);
+
+    skipBtn.addEventListener("click", skipStage);
+
+</script>
