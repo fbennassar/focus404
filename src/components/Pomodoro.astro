@@ -1,17 +1,27 @@
 ---
-
+const welcomeGif = "https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExdGtsc2I3aW1nNDNvMjBsMjlldHhmaG82OHQ2amJ0d2xobG84aHN4YSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/ASd0Ukj0y3qMM/giphy.gif" 
 ---
 
 
 
 <div id="pomodoro-timer" class="text-center p-10 bg-white/20 rounded-lg backdrop-blur-md ">
-    <h2 id="actual-status" class="text-2xl font-bold mb-4"></h2>
-  <div id="time-display" class="text-8xl font-bold mb-4">25:00</div>
+    <h2 id="actual-status" class="text-2xl font-bold mb-4">Bienvenido</h2>
+    <img src={welcomeGif} width="200" height="200" class="mx-auto mb-4 rounded-full" alt="Pomodoro Timer">
+  <div id="time-display" class="text-8xl font-bold mb-4">00:03</div>
   <div class="space-x-4">
-    <button id="start-pause-btn" class="px-6 py-2 bg-green-500 text-white rounded hover:bg-green-600">Iniciar</button>
-    <button id="reset-btn" class="px-6 py-2 bg-red-500 text-white rounded hover:bg-red-600">Reiniciar</button>
-    <button id="finish-btn" class="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Finalizar</button>
-    <button id="skip-btn" class="px-6 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600">Saltar</button>
+    <button id="start-pause-btn" class="px-2 py-2 hover:cursor-pointer">
+        <img id="start-icon" src="/icons/play.svg" alt="Iniciar" class="h-10 w-10 mr-2 hover:cursor-pointer">
+        <img id="pause-icon" src="/icons/pause.svg" alt="Pausar" class="h-10 w-10 mr-2 hover:cursor-pointer hidden">
+    </button>
+    <button id="reset-btn" class="px-2 py-2 hover:cursor-pointer">
+        <img id="reset-icon" src="/icons/reset.svg" alt="Reset" class="h-10 w-10 mr-2 hover:cursor-pointer">
+    </button>
+    <button id="finish-btn" class="px-2 py-2 hover:cursor-pointer">
+        <img id="finish-icon" src="/icons/finish.svg" alt="Finish" class="h-10 w-10 mr-2 hover:cursor-pointer">
+    </button>
+    <button id="skip-btn" class="px-2 py-2 hover:cursor-pointer">
+        <img id="skip-icon" src="/icons/skip.svg" alt="Skip" class="h-10 w-10 mr-2 hover:cursor-pointer">
+    </button>
   </div>
   <div id="stages" class="mt-4">
     <span class="inline-block w-4 h-4 bg-gray-300 rounded-full mr-2"></span>
@@ -28,6 +38,8 @@
     const finishBtn = document.getElementById("finish-btn") as HTMLButtonElement;
     const skipBtn = document.getElementById("skip-btn") as HTMLButtonElement;
     const statusDisplay = document.getElementById("actual-status") as HTMLHeadingElement;
+    const startIcon = document.getElementById("start-icon") as HTMLImageElement;
+    const pauseIcon = document.getElementById("pause-icon") as HTMLImageElement;
 
     const workTime = 3;
     const breakTime = 5;
@@ -106,12 +118,13 @@
 
     const startTimer = () => {
             isRunning = true;
+            startIcon.classList.add("hidden");
+            pauseIcon.classList.remove("hidden");
             timerInterval = setInterval(() => {
                 timeLeft--;
 
                 if (timeLeft <= 0) {
                     pauseTimer();
-                    startPauseBtn.textContent = "Iniciar";
                     nextPhase();
                 }
 
@@ -121,12 +134,16 @@
 
     const pauseTimer = () => {
         isRunning = false;
+        pauseIcon.classList.add("hidden");
+        startIcon.classList.remove("hidden");
         clearInterval(timerInterval);
     }
 
     const resetTimer = () => {
         isRunning = false;
-        startPauseBtn.textContent = "Iniciar";
+        // startPauseBtn.textContent = "Iniciar";
+        startIcon.classList.remove("hidden");
+        pauseIcon.classList.add("hidden");
         clearInterval(timerInterval);
         if (currentPhase === "work") {
             timeLeft = workTime;
@@ -145,7 +162,9 @@
         stageStatus = [false, false, false, false];
         currentPhase = "work";
         timeLeft = workTime;
-        startPauseBtn.textContent = "Iniciar";
+        // startPauseBtn.textContent = "Iniciar";
+        startIcon.classList.remove("hidden");
+        pauseIcon.classList.add("hidden");
         pauseTimer();
         updateDisplay();
         updateStages();
@@ -155,16 +174,18 @@
         nextPhase();
         updateDisplay();
         pauseTimer();
-        startPauseBtn.textContent = "Iniciar";
+        // startPauseBtn.textContent = "Iniciar";
+        startIcon.classList.remove("hidden");
+        pauseIcon.classList.add("hidden");
     }
 
     startPauseBtn.addEventListener("click", () => {
         if (isRunning) {
             pauseTimer();
-            startPauseBtn.textContent = "Iniciar";
+            // startPauseBtn.textContent = "Iniciar";
         } else {
             startTimer();
-            startPauseBtn.textContent = "Pausar";
+            // startPauseBtn.textContent = "Pausar";
         }
     });
 
